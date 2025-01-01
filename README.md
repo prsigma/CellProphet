@@ -1,11 +1,9 @@
 # TRIGON
----
 TRIGON is a Transformer-based model that predicts the expression of target genes after time point t through the expression of transcription factors from the previous time points, thereby learning the causal relationships of genes over time. TRIGON achieved the best performance across four differentiation datasets compared to seven baseline methods. On mouse embryonic stem cell dataset, TRIGON successfully identified previously reported transcription factors and discovered a group of potential TFs related to primitive endoderm development. TRIGON is capable of constructing dynamic gene regulatory network with different temporal resolutions, enabling the observation of GRN changes across varying time scales. Finally, we applied TRIGON to mouse hematopoietic stem cell dataset and, through in silico perturbation, reproduced the changes in cell fate following the knockout of Gata1 and Spi1. We believe that TRIGON is an innovative dynamic modeling framework that provides deeper insights into gene regulation during biological differentiation processes.
 
 ![alt text](image.png)
 
 ## Installation
----
 TRIGON was originally tested on Ubuntu 20.04 with Python 3.10. We recommend running TRIGON on CUDA if possible. 
 
 ## Setup a conda environment
@@ -18,7 +16,6 @@ TRIGON was originally tested on Ubuntu 20.04 with Python 3.10. We recommend runn
 4. `pip install einops`
 
 ## Usage example
----
 1. `conda activate TRIGON`
 
 2. `bash run.sh`
@@ -39,5 +36,4 @@ A *output* folder in current directory will be generated, which will contain fou
 - [ ] Upload the code for in silico perturbation
 
 ## Bugs & Suggestions
----
 Please contact prchengdu@gmail.com or raise an issue in the github repo with any questions.
