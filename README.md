@@ -64,7 +64,7 @@ TRIGON accepts the following data as input:
     - [Seurat](https://satijalab.org/seurat/)
     - [Cellrank](https://cellrank.readthedocs.io/en/stable/)
 - **Prior gene interaction network**: a `.csv` file, representing the potential regulatory genes and their target genes.
-- **Ground truth gene interaction network**: a `.csv` file, representing the experimentally verified regulatory genes and their target genes. The ground truth network is sourced from [BEELINE](https://github.com/prsigma/BEELINE) and obtained through ChIP-seq experiments.
+- **Ground truth gene interaction network**: a `.csv` file, representing the experimentally verified regulatory genes and their target genes. The ground truth network is sourced from [BEELINE](https://github.com/Murali-group/Beeline) and obtained through ChIP-seq experiments.
 - **Differential gene information**(optional): A `.csv` file containing differential expression information for each gene. In our study, we selected the top 2000 differentially expressed genes for each dataset as input.
 
 ***We provide all datasets used in the article for researchers to reproduce the results.***
