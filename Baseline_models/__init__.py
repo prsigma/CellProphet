@@ -1,0 +1,1 @@
+from .CEFCON.cefcon import NetModel

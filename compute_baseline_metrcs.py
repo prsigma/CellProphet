@@ -22,7 +22,7 @@ import scipy.io as sio
 
 import matplotlib.font_manager as fm
 
-plt.rc('font', family='Arial')  # Set font to Times New Roman
+# plt.rc('font', family='Arial')  # Set font to Times New Roman
 
 def benchmark(gt_grn_path,pred_grn_list,algorithm_list,tf_list,outdir):
     gt_grn = pd.read_csv(gt_grn_path)
@@ -97,7 +97,7 @@ def benchmark(gt_grn_path,pred_grn_list,algorithm_list,tf_list,outdir):
     ax_auprc.set_ylabel('Precision')
     ax_auprc.set_title('Precision-Recall Curve')
     ax_auprc.legend(loc='upper right')
-    figure_auprc.savefig(os.path.join(outdir,"pr_curve.svg"), bbox_inches='tight')
+    figure_auprc.savefig(os.path.join(outdir,"pr_curve.png"), bbox_inches='tight')
     plt.close(figure_auprc)
 
     ax_roc.plot([0, 1], [0, 1], color='black', linestyle='--')
@@ -107,7 +107,7 @@ def benchmark(gt_grn_path,pred_grn_list,algorithm_list,tf_list,outdir):
     ax_roc.set_ylabel('True Positive Rate')
     ax_roc.set_title('Receiver Operating Characteristic')
     ax_roc.legend(loc="lower right")
-    figure_roc.savefig(os.path.join(outdir,"roc_curve.svg"), bbox_inches='tight')
+    figure_roc.savefig(os.path.join(outdir,"roc_curve.png"), bbox_inches='tight')
     plt.close(figure_roc)
         
     auc_df = pd.DataFrame(auc_list)
@@ -121,9 +121,9 @@ def benchmark(gt_grn_path,pred_grn_list,algorithm_list,tf_list,outdir):
 datasets = ["mESC","mHSC-GM","mHSC-L","mHSC-E"]
 # datasets = ['mESC']
 
-root_path = "/home/pengrui/work_space_pengrui/project/GRN期刊/Result_1_benchmarking/output"
+root_path = "output"
 
-algorithm = ['MTGRN','CEFCON','Celloracle','NetREX','GRNBoost2','GENIE3','Random',"Prior_Random"]
+algorithm = ['TRIGON','CEFCON','Celloracle','NetREX','GRNBoost2','GENIE3','Random',"Prior_Random"]
 
 metric_list = list()
 for each_dataset in datasets:
@@ -140,7 +140,7 @@ for each_dataset in datasets:
         if each_algorithm == 'CEFCON':
             pred_grn_list.append(os.path.join(path,'cell_lineage_GRN.csv'))
             
-        elif each_algorithm == 'Celloracle' or each_algorithm == 'GRNBoost2' or each_algorithm == 'Random' or each_algorithm == 'GENIE3' or each_algorithm == 'MTGRN' or each_algorithm == 'Prior_Random':
+        elif each_algorithm == 'Celloracle' or each_algorithm == 'GRNBoost2' or each_algorithm == 'Random' or each_algorithm == 'GENIE3' or each_algorithm == 'TRIGON' or each_algorithm == 'Prior_Random':
             pred_grn_list.append(os.path.join(path,'grn.csv'))
         
         elif each_algorithm == 'NetREX':

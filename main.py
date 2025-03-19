@@ -13,10 +13,10 @@ from tqdm import tqdm
 from scipy.stats import pearsonr
 import numpy as np
 import pytorch_warmup as warmup
-from GRN期刊.utils import *
+from utils import *
 import itertools
 from Data import Train_data, Test_data
-from model import MTGRN
+from model import TRIGON
 from baseline_models import baseline_compare
 
 seed_everything(2024)
@@ -119,7 +119,7 @@ def preprocess_data(args,logger):
     return True
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='expriments for MTGRN')
+    parser = argparse.ArgumentParser(description='expriments for TRIGON')
 
     parser.add_argument('--data_source', type=str, required=True, choices=['BEELINE', 'others'], help='Specify the data source')
     parser.add_argument('--dataset_name',type=str,required=True, help='name of dataset')
@@ -156,7 +156,7 @@ def parse_args():
 
     return args
 
-def preprocess_data_for_mtgrn(args):
+def preprocess_data_for_trigon(args):
     expression_path = os.path.join(args.output_dir,args.dataset_name,'expression.csv')
     gt_grn_path = os.path.join(args.output_dir,args.dataset_name,'gt_grn.csv')
 
@@ -263,9 +263,9 @@ def preprocess_data_for_mtgrn(args):
 
     size=[args.input_length,args.predict_length]
 
-    os.makedirs(os.path.join(args.output_dir,args.dataset_name,'MTGRN'),exist_ok=True)
-    expr_df.to_csv(os.path.join(args.output_dir,args.dataset_name,'MTGRN','mtgrn_expression.csv'))
-    cell_index_sorted_by_time.to_csv(os.path.join(args.output_dir,args.dataset_name,'MTGRN','mtgrn_cell_sort.csv'))
+    os.makedirs(os.path.join(args.output_dir,args.dataset_name,'TRIGON'),exist_ok=True)
+    expr_df.to_csv(os.path.join(args.output_dir,args.dataset_name,'TRIGON','trigon_expression.csv'))
+    cell_index_sorted_by_time.to_csv(os.path.join(args.output_dir,args.dataset_name,'TRIGON','trigon_cell_sort.csv'))
 
     return expression_data, dropout_mask, size, prior_mask, id_gene_df,no_regulate_genes_index,logFC_value,prior_grn
 
@@ -343,7 +343,7 @@ def test(args,save_path,checkpoint_path,expression_data,id_gene_df,size,prior_ma
         shuffle=False,
         num_workers=args.num_workers)
     
-    model = MTGRN(args.input_length,
+    model = TRIGON(args.input_length,
                     args.predict_length,
                     args.d_model,
                     args.d_ff,
@@ -383,7 +383,7 @@ def test(args,save_path,checkpoint_path,expression_data,id_gene_df,size,prior_ma
         
         if args.index != -1:
             result = f'input_length:{args.input_length},predict_length:{args.predict_length},d_model:{args.d_model},heads:{args.heads},dropout:{args.dropout},layers:{args.encoder_layers},auc:{auc},aupr:{aupr}'
-            with open(os.path.join(args.output_dir,args.dataset_name,'MTGRN',f'results_{args.index}.txt'), 'a') as file:
+            with open(os.path.join(args.output_dir,args.dataset_name,'TRIGON',f'results_{args.index}.txt'), 'a') as file:
                 file.write(result + '\n')
         else:
             print(auc,aupr)
@@ -400,8 +400,8 @@ def main():
     if args.baseline:
         baseline_compare(args,logger)
     else:
-        # preprocess MTGRN data
-        expression_data, dropout_mask, size, prior_mask, id_gene_df,no_tf_genes_index,logFC_value,prior_grn = preprocess_data_for_mtgrn(args) # expression_data (cell * gene)
+        # preprocess TRIGON data
+        expression_data, dropout_mask, size, prior_mask, id_gene_df,no_tf_genes_index,logFC_value,prior_grn = preprocess_data_for_trigon(args) # expression_data (cell * gene)
 
         train_data_set = Train_data(expression_data,dropout_mask,size,'train')
         train_data_loader = DataLoader(
@@ -417,7 +417,7 @@ def main():
             shuffle=False,
             num_workers=args.num_workers)
 
-        model = MTGRN(args.input_length,
+        model = TRIGON(args.input_length,
                 args.predict_length,
                 args.d_model,
                 args.d_ff,
@@ -425,7 +425,7 @@ def main():
                 args.dropout,
                 args.encoder_layers).to(args.device)
         
-        save_path = os.path.join(args.output_dir,args.dataset_name,'MTGRN')
+        save_path = os.path.join(args.output_dir,args.dataset_name,'TRIGON')
         os.makedirs(save_path, exist_ok=True)
 
         model_optim = optim.Adam(model.parameters(), lr=args.learning_rate)

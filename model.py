@@ -19,7 +19,7 @@ class FullAttention(nn.Module):
         
         if no_tf_genes_index is not None:
             scores.masked_fill_(attn_mask, -np.inf)
-            scores[:,:,no_tf_genes_index,no_tf_genes_index] = 1.0
+            scores[:,:,:,no_tf_genes_index,no_tf_genes_index] = 1.0
         
         else:
             scores.masked_fill_(attn_mask, -np.inf)
@@ -147,9 +147,9 @@ class Encoder(nn.Module):
 
         return x, spatial_attention
 
-class MTGRN(nn.Module):
+class TRIGON(nn.Module):
     def __init__(self, in_len, out_len, d_model, d_ff, n_heads, dropout, e_layers):
-        super(MTGRN, self).__init__()
+        super(TRIGON, self).__init__()
         self.in_len = in_len
         self.out_len = out_len
         self.d_model = d_model

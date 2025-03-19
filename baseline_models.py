@@ -1,6 +1,6 @@
 import pandas as pd
 import os 
-from TRIGON.utils import *
+from utils import *
 import celloracle as co
 seed_everything(2024)
 
@@ -12,11 +12,11 @@ def run_CEFCON(args,algorithm,logger):
     os.makedirs(output_path,exist_ok=True)
 
     if args.species == 'human':
-        prior_grn_path = '/home/pengrui/CEFCON/prior_data/network_human_baseline.csv'
+        prior_grn_path = 'Baseline_prior/network_human_baseline.csv'
     else:
-        prior_grn_path = '/home/pengrui/CEFCON/prior_data/network_mouse_baseline.csv'
+        prior_grn_path = 'Baseline_prior/network_mouse_baseline.csv'
 
-    os.system(f'/home/pengrui/mambaforge/envs/grn/bin/cefcon --input_expData {expression_path} --input_priorNet {prior_grn_path} --out_dir {output_path} --seed 2024 --species {args.species} --cuda 1 --repeats 1')
+    os.system(f'cefcon --input_expData {expression_path} --input_priorNet {prior_grn_path} --out_dir {output_path} --seed 2024 --species {args.species} --cuda 5 --repeats 1')
     
     return True
 
@@ -114,7 +114,7 @@ def run_GRNBoost2(args,algorithm,logger):
     
     save_grn_path = os.path.join(save_path,'grn.csv')
 
-    os.system(f'/home/pengrui/mambaforge/envs/grn/bin/python ./Baseline_models/GRNBoost2/arboreto_with_multiprocessing.py \
+    os.system(f'python Baseline_models/GRNBoost2/arboreto_with_multiprocessing.py \
                 {gene_expression_path} \
                 {tf_name_path} \
                 --method grnboost2 \
@@ -140,9 +140,9 @@ def run_NetREX(args,algorithm,logger):
     print('\nloading prior knowledge...')
     
     if args.species == 'human':
-        prior_grn = pd.read_csv('/home/pengrui/CEFCON/prior_data/network_human_baseline.csv')
+        prior_grn = pd.read_csv('Baseline_prior/network_human_baseline.csv')
     else:
-        prior_grn = pd.read_csv('/home/pengrui/CEFCON/prior_data/network_mouse_baseline.csv')
+        prior_grn = pd.read_csv('Baseline_prior/network_mouse_baseline.csv')
     
     prior_grn['from'] = prior_grn['from'].map(lambda x: x.upper())
     prior_grn['to'] = prior_grn['to'].map(lambda x: x.upper())
@@ -174,7 +174,7 @@ def run_NetREX(args,algorithm,logger):
     prior_grn.to_csv(prior_path, sep='\t', index=True, header=True)
     expr_df.to_csv(exp_data_path, sep='\t', header=False, index=True)
 
-    os.system(f"/home/pengrui/mambaforge/envs/grn/bin/python ./Baseline_models/NetREX/NetREX.py -e {exp_data_path} -p {prior_path} -o {save_path} -k 0.6")
+    os.system(f"python Baseline_models/NetREX/NetREX.py -e {exp_data_path} -p {prior_path} -o {save_path} -k 0.6")
     
     return True
 
@@ -216,10 +216,7 @@ def run_prior_Random(args,algorithm,logger):
     print('\nloading prior knowledge...')
     # prior_grn = pd.read_csv('./%s_prior_GRN.csv' % args.species)
     
-    if args.species == 'human':
-        prior_grn = pd.read_csv('/home/pengrui/CEFCON/prior_data/network_human.csv')
-    else:
-        prior_grn = pd.read_csv('/home/pengrui/CEFCON/prior_data/network_mouse.csv')
+    prior_grn = pd.read_csv('Prior/network_mouse.csv')
     
     prior_grn['from'] = prior_grn['from'].map(lambda x: x.upper())
     prior_grn['to'] = prior_grn['to'].map(lambda x: x.upper())
@@ -239,19 +236,6 @@ def run_prior_Random(args,algorithm,logger):
 
     
     prior_grn.to_csv(os.path.join(args.output_dir,args.dataset_name,algorithm,'grn.csv'),index=False)
-
-    return True
-
-def run_DeepSEM(args,algorithm,logger):
-    logger.info(f'\n****************running DeepSEM**********************')
-
-    save_path = os.path.join(args.output_dir,args.dataset_name,algorithm)
-    os.makedirs(save_path,exist_ok=True)
-
-    expression_path = os.path.join(args.output_dir,args.dataset_name,'expression.csv')
-    gt_path = os.path.join(args.output_dir,args.dataset_name,'gt_grn.csv')
-
-    os.system(f'/home/pengrui/mambaforge/envs/grn/bin/python ./Baseline_models/DeepSEM/main.py --task non_celltype_GRN --data_file {expression_path} --net_file {gt_path} --setting new --alpha 100 --beta 1 --n_epoch 90 --save_name {save_path}')
 
     return True
 
@@ -299,4 +283,3 @@ def baseline_compare(args,logger):
     run_GRNBoost2(args,'GRNBoost2',logger)
     run_GENIE3(args,'GENIE3',logger)
     run_prior_Random(args,'Prior_Random',logger)
-
