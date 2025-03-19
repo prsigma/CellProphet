@@ -9,7 +9,6 @@
 ![Pull Requests](https://img.shields.io/github/issues-pr/prsigma/TRIGON?label=pull%20requests&style=flat-square&color=green)
 
 ## Overview
----
 TRIGON is a Transformer-based model that predicts the expression of target genes after time point t through the expression of transcription factors from the previous time points, thereby learning the causal relationships of genes over time. TRIGON achieved the best performance across four differentiation datasets compared to seven baseline methods. On mouse embryonic stem cell dataset, TRIGON successfully identified previously reported transcription factors and discovered a group of potential TFs related to primitive endoderm development. TRIGON is capable of constructing dynamic gene regulatory network with different temporal resolutions, enabling the observation of GRN changes across varying time scales. Finally, we applied TRIGON to mouse hematopoietic stem cell dataset and, through in silico perturbation, reproduced the changes in cell fate following the knockout of Gata1 and Spi1. We believe that TRIGON is an innovative dynamic modeling framework that provides deeper insights into gene regulation during biological differentiation processes.
 
 ## Why TRIGON?
@@ -23,6 +22,16 @@ TRIGON is a Transformer-based model that predicts the expression of target genes
 ![alt text](image.png)
 
 ## Quick Links
+- [Installation](#installation)
+- [Input data](#input-data)
+- [Training & Inference](#training--inference)
+- [Output GRN](#output-grn)
+- [Baseline Model reproduction](#baseline-model-reproduction)
+- [Data for ATAC & Hi-C](#data-for-atac--hic)
+- [Data for Gata1 knockout](#data-for-gata1-knockout)
+- [Todo list](#todo-list)
+- [Contact](#contact)
+- [Citation](#citation)
 
 ## Installation
 1. Clone the repository to your local machine and enter the repository in the command line interface.
@@ -315,14 +324,6 @@ In the article, we used the ATAC and Hi-C data from other studies, which are dep
 ## Data for Gata1 knockout
 In the article, we used the Gata1 knockout data from other studies to verify the effectiveness of our model in predicting the changes in cell fate. You can find the data in the following links:
 - Data: [Gata1 knockout data](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE279985)
-
-
-
-
-
-
-
-
 
 ## Todo list
 - [ ] upload the instruction of R environment for reproducing the results
