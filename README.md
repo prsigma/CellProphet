@@ -44,15 +44,13 @@ cd TRIGON
 ```
 conda env create -f environment.yaml
 ```
+3. Install relevant requirements
+```
+conda activate TRIGON
+pip install -r requirements.txt
+```
 
-**IMPORTANT NOTE**: If the installation using the yaml file fails, you can alternatively use the following command to install:
-```
-pip3 install -U Cython
-pip install cvxpy celloracle scanpy==1.11.0 pytorch_warmup einops cefcon
-pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu117
-pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-2.1.0+cu118.html
-```
-For servers with cuda lower than 11.7, consider upgrading cuda or install ```pytorch & torch_geometric``` with cpu version.
+**IMPORTANT NOTE**: For servers with cuda lower than 11.7, consider upgrading cuda or install ```pytorch``` with cpu version.
 
 ## Input data
 TRIGON accepts the following data as input:
