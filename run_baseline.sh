@@ -16,10 +16,10 @@ for dataset in "${datasets[@]}"; do
         gt_name="mHSC"
         python main.py --data_source BEELINE --dataset_name ${dataset} --data_path "BEELINE-data/${dataset}/ExpressionData.csv" \
     --output_dir ${output_dir} --gt_path "BEELINE-Networks/${gt_name}-ChIP-seq-network.csv" --time_info "BEELINE-data/${dataset}/PseudoTime.csv" \
-    --gene_order BEELINE-data/${dataset}/GeneOrdering.csv --tf_path ${tf_path} --species ${species} --logFC_path "BEELINE-data/${dataset}/DEgenes_MAST_sp4_PseudoTime.csv" --cuda_index 5 --baseline
+    --gene_order BEELINE-data/${dataset}/GeneOrdering.csv --tf_path ${tf_path} --species ${species} --logFC_path "BEELINE-data/${dataset}/DEgenes_MAST_sp4_PseudoTime.csv" --cuda_index 0 --baseline
     else
     python main.py --data_source BEELINE --dataset_name ${dataset} --data_path "BEELINE-data/${dataset}/ExpressionData.csv" \
     --output_dir ${output_dir} --gt_path "BEELINE-Networks/${dataset}-ChIP-seq-network.csv" --time_info "BEELINE-data/${dataset}/PseudoTime.csv" \
-    --gene_order BEELINE-data/${dataset}/GeneOrdering.csv --tf_path ${tf_path} --species ${species} --logFC_path "BEELINE-data/${dataset}/DEgenes_MAST_sp4_PseudoTime.csv" --cuda_index 5 --baseline
+    --gene_order BEELINE-data/${dataset}/GeneOrdering.csv --tf_path ${tf_path} --species ${species} --logFC_path "BEELINE-data/${dataset}/DEgenes_MAST_sp4_PseudoTime.csv" --cuda_index 0 --baseline
     fi
 done
