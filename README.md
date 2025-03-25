@@ -48,6 +48,7 @@ conda env create -f environment.yaml
 ```
 conda activate TRIGON
 pip install -r requirements.txt
+pip install celloracle
 ```
 
 **IMPORTANT NOTE**: For servers with cuda lower than 11.7, consider upgrading cuda or install ```pytorch``` with cpu version.
