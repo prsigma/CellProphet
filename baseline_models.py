@@ -2,6 +2,11 @@ import pandas as pd
 import os 
 from utils import *
 import celloracle as co
+
+import sys
+sys.path.append('Baseline_models/inferelator')
+from inferelator import inferelator_workflow
+
 seed_everything(2024)
 
 def run_CEFCON(args,algorithm,logger):
@@ -12,79 +17,11 @@ def run_CEFCON(args,algorithm,logger):
     os.makedirs(output_path,exist_ok=True)
 
     if args.species == 'human':
-        prior_grn_path = 'Baseline_prior/network_human_baseline.csv'
+        prior_grn_path = 'Prior/network_human_merged.csv'
     else:
-        prior_grn_path = 'Baseline_prior/network_mouse_baseline.csv'
+        prior_grn_path = 'Prior/network_mouse_merged.csv'
 
     os.system(f'cefcon --input_expData {expression_path} --input_priorNet {prior_grn_path} --out_dir {output_path} --seed 2024 --species {args.species} --cuda 5 --repeats 1')
-    
-    return True
-
-def run_Celloracle(args,algorithm,logger):
-    logger.info(f'\n****************running Celloracle**********************')
-
-    os.makedirs(os.path.join(args.output_dir,args.dataset_name,algorithm),exist_ok=True)
-    
-    expression_path = os.path.join(args.output_dir,args.dataset_name,'expression.csv')
-
-    adata = sc.read_csv(expression_path)
-
-    # Normalize gene expression matrix with total UMI count per cell
-    sc.pp.normalize_per_cell(adata, key_n_counts='n_counts_all')
-    # keep raw cont data before log transformation
-    adata.raw = adata
-    adata.layers["raw_count"] = adata.raw.X.copy()
-    # Log transformation and scaling
-    sc.pp.scale(adata)
-    # PCA
-    sc.tl.pca(adata, svd_solver='arpack')
-
-    # Diffusion map
-    sc.pp.neighbors(adata, n_neighbors=4, n_pcs=20)
-
-    sc.tl.diffmap(adata)
-    # Calculate neihbors again based on diffusionmap 
-    sc.pp.neighbors(adata, n_neighbors=10, use_rep='X_diffmap')
-    # Cell clustering
-    sc.tl.louvain(adata, resolution=0.8)
-    sc.tl.paga(adata, groups='louvain')
-    sc.pl.paga(adata)
-    
-    sc.tl.draw_graph(adata, init_pos='paga', random_state=123)
-    # suppose all cells belong to the same type
-    adata.obs["cell_type"] = ['all' for _ in adata.obs.louvain]
-    adata.obs["louvain_annot"] = ['all' for i in adata.obs.louvain]
-    
-    if args.species == 'human':
-        base_GRN = co.data.load_human_promoter_base_GRN()
-        base_GRN["gene_short_name"] = base_GRN["gene_short_name"].apply(lambda x: x.upper())
-    else:
-        base_GRN = co.data.load_mouse_scATAC_atlas_base_GRN()
-        base_GRN.columns = list(base_GRN.columns[:2]) + list(base_GRN.columns[2:].str.upper())
-        base_GRN["gene_short_name"] = base_GRN["gene_short_name"].apply(lambda x: x.upper())
-    
-    oracle = co.Oracle()
-    # use the unscaled mRNA count for the nput of Oracle object.
-    adata.X = adata.layers["raw_count"].copy()
-
-    # Instantiate Oracle object.
-    oracle.import_anndata_as_raw_count(adata=adata,
-                                    cluster_column_name="louvain_annot",
-                                    embedding_name="X_draw_graph_fa")
-    
-    oracle.import_TF_data(TF_info_matrix=base_GRN)
-    # Perform PCA
-    oracle.perform_PCA()
-
-    oracle.knn_imputation(n_pca_dims=50, k=1, balanced=True, b_sight=8,
-                      b_maxl=4, n_jobs=4)
-    # Calculate GRN for each population in "louvain_annot" clustering unit.
-    links = oracle.get_links(cluster_name_for_GRN_unit="louvain_annot", alpha=10,
-                         verbose_level=10)
-    
-    links.links_dict['all'][['source', 'target', 'coef_abs']].to_csv(
-        os.path.join(args.output_dir,args.dataset_name,algorithm,'grn.csv')
-        )
     
     return True
 
@@ -136,18 +73,19 @@ def run_NetREX(args,algorithm,logger):
     gt_grn_path = os.path.join(args.output_dir,args.dataset_name,'gt_grn.csv')
     gt_grn = pd.read_csv(gt_grn_path)
     
-    
     print('\nloading prior knowledge...')
     
     if args.species == 'human':
-        prior_grn = pd.read_csv('Baseline_prior/network_human_baseline.csv')
+        prior_grn = pd.read_csv('Prior/network_human_merged.csv',index_col=None)
     else:
-        prior_grn = pd.read_csv('Baseline_prior/network_mouse_baseline.csv')
+        prior_grn = pd.read_csv('Prior/network_mouse_merged.csv',index_col=None)
+
+    prior_grn.drop(columns=['Unnamed: 0'],inplace=True)
+    prior_grn.reset_index(drop=True,inplace=True)
     
     prior_grn['from'] = prior_grn['from'].map(lambda x: x.upper())
     prior_grn['to'] = prior_grn['to'].map(lambda x: x.upper())
 
-    
     allNodes = set(gt_grn.Gene1.unique()).union(set(gt_grn.Gene2.unique()))
 
     
@@ -214,9 +152,11 @@ def run_prior_Random(args,algorithm,logger):
     
     
     print('\nloading prior knowledge...')
-    # prior_grn = pd.read_csv('./%s_prior_GRN.csv' % args.species)
     
-    prior_grn = pd.read_csv('Prior/network_mouse.csv')
+    if args.species == 'human':
+        prior_grn = pd.read_csv('Prior/network_human_merged.csv')
+    else:
+        prior_grn = pd.read_csv('Prior/network_mouse_merged.csv')
     
     prior_grn['from'] = prior_grn['from'].map(lambda x: x.upper())
     prior_grn['to'] = prior_grn['to'].map(lambda x: x.upper())
@@ -275,11 +215,185 @@ def run_GENIE3(args,algorithm,logger):
 
     return True
 
+def run_Inferelator(args, algorithm, logger):
+    logger.info(f'\n****************running Inferelator**********************')
+    
+    save_path = os.path.join(args.output_dir, args.dataset_name, algorithm)
+    os.makedirs(save_path, exist_ok=True)
+    
+    expression_path = os.path.join(args.output_dir, args.dataset_name, 'expression.csv')
+    
+    gt_grn_path = os.path.join(args.output_dir, args.dataset_name, 'gt_grn.csv')
+    gt_grn = pd.read_csv(gt_grn_path)
+    allNodes = set(gt_grn.Gene1.unique()).union(set(gt_grn.Gene2.unique()))
+    
+    tf_df = pd.read_csv(args.tf_path, header=0)
+    tfs = tf_df[tf_df.columns[0]].drop_duplicates()
+    tfs = tfs.map(lambda x: x.upper())
+    end_tf = allNodes & set(tfs)
+    
+    print('\nloading prior knowledge...')
+    if args.species == 'human':
+        prior_grn = pd.read_csv('Prior/network_human_merged.csv', index_col=None)
+    else:
+        prior_grn = pd.read_csv('Prior/network_mouse_merged.csv', index_col=None)
+    
+    prior_grn.drop(columns=['Unnamed: 0'], inplace=True)
+    prior_grn.reset_index(drop=True, inplace=True)
+    
+    prior_grn['from'] = prior_grn['from'].map(lambda x: x.upper())
+    prior_grn['to'] = prior_grn['to'].map(lambda x: x.upper())
+    
+    logger.info(f"Prior GRN before filtering: {len(prior_grn)} edges")
+    logger.info(f"Available TFs: {len(end_tf)}, Available genes: {len(allNodes)}")
+    logger.info(f"Sample TFs: {list(end_tf)[:5]}")
+    logger.info(f"Sample genes: {list(allNodes)[:5]}")
+    logger.info(f"Sample prior edges before filtering:\n{prior_grn.head()}")
+    
+    prior_grn = prior_grn.loc[prior_grn['from'].isin(end_tf) & prior_grn['to'].isin(allNodes), :]
+    logger.info(f"Prior GRN after filtering: {len(prior_grn)} edges")
+    
+    prior_grn = prior_grn.drop_duplicates(subset=['from', 'to'], keep='first')
+    prior_grn = prior_grn[['from', 'to']]
+    prior_grn.columns = ['Gene1', 'Gene2']
+    
+    logger.info(f"Final prior GRN shape: {prior_grn.shape}")
+    logger.info(f"Sample final prior edges:\n{prior_grn.head()}")
+    
+    expr_df = pd.read_csv(expression_path, index_col=0)
+    expr_df_transposed = expr_df.T  
+    expr_tsv_path = os.path.join(save_path, 'expression.tsv')
+    expr_df_transposed.to_csv(expr_tsv_path, sep='\t')
+    
+    logger.info(f"Original expression data shape (cells x genes): {expr_df.shape}")
+    logger.info(f"Transposed expression data shape (genes x cells): {expr_df_transposed.shape}")
+
+    tf_names_path = os.path.join(save_path, 'tf_names.tsv')
+    tf_names_df = pd.DataFrame(list(end_tf), columns=['tf'])
+    tf_names_df.to_csv(tf_names_path, sep='\t', index=False, header=False)
+    
+    all_genes = list(allNodes)
+    tf_list = list(end_tf)
+    
+    import numpy as np
+    prior_matrix = pd.DataFrame(
+        data=np.zeros((len(all_genes), len(tf_list))), 
+        index=all_genes,
+        columns=tf_list
+    )
+    
+    edges_set = 0
+    for _, row in prior_grn.iterrows():
+        tf_name = row['Gene1']  
+        target_gene = row['Gene2']  
+        if tf_name in tf_list and target_gene in all_genes:
+            prior_matrix.loc[target_gene, tf_name] = 1
+            edges_set += 1
+    
+    logger.info(f"Successfully set {edges_set} edges in prior matrix out of {len(prior_grn)} total edges")
+    
+    priors_path = os.path.join(save_path, 'priors.tsv')
+    prior_matrix.to_csv(priors_path, sep='\t')
+    
+    logger.info(f"Prior matrix shape: {prior_matrix.shape}")
+    logger.info(f"Prior matrix non-zero entries: {(prior_matrix != 0).sum().sum()}")
+    
+    
+    meta_data_path = os.path.join(save_path, 'meta_data.tsv')
+    meta_data = pd.DataFrame({
+        'sample': expr_df.columns, 
+        'condition': ['condition_1'] * len(expr_df.columns)
+    })
+    meta_data.to_csv(meta_data_path, sep='\t', index=False)
+    
+    try:
+        worker = inferelator_workflow(
+            workflow="single-cell",
+            regression="bbsr"
+        )
+        
+        worker.set_file_paths(
+            input_dir=save_path,
+            output_dir=save_path,
+            expression_matrix_file='expression.tsv',
+            tf_names_file='tf_names.tsv',
+            priors_file='priors.tsv',
+            meta_data_file='meta_data.tsv'
+        )
+        
+        worker.set_file_properties(expression_matrix_columns_are_genes=False)
+        
+        worker.set_network_data_flags(use_no_gold_standard=True)
+        
+        worker.set_run_parameters(num_bootstraps=5, random_seed=2024)
+        
+        final_network = worker.run()
+        
+        logger.info(f"Inferelator completed. Result type: {type(final_network)}")
+        
+        if final_network is not None:
+            if hasattr(final_network, 'network'):
+                network_df = final_network.network
+                logger.info(f"Network DataFrame shape: {network_df.shape}")
+                logger.info(f"Network DataFrame columns: {network_df.columns.tolist()}")
+                logger.info(f"First few rows:\n{network_df.head()}")
+                
+                output_network = network_df.copy()
+                if 'regulator' in output_network.columns and 'target' in output_network.columns:
+                    output_network = output_network.rename(columns={
+                        'regulator': 'Gene1', 
+                        'target': 'Gene2'
+                    })
+                
+                weight_cols = [col for col in output_network.columns if 'coef' in col.lower() or 'weight' in col.lower()]
+                if len(weight_cols) > 0:
+                    output_network = output_network.rename(columns={weight_cols[0]: 'weights_combined'})
+                elif 'combined_confidences' in output_network.columns:
+                    output_network = output_network.rename(columns={'combined_confidences': 'weights_combined'})
+                
+                if 'weights_combined' not in output_network.columns:
+                    output_network['weights_combined'] = 1.0
+                
+                output_columns = ['Gene1', 'Gene2', 'weights_combined']
+                available_columns = [col for col in output_columns if col in output_network.columns.tolist()]
+                if len(available_columns) >= 2:  
+                    output_network = output_network[available_columns]
+                    if 'weights_combined' not in output_network.columns:
+                        output_network['weights_combined'] = 1.0
+                else:
+                    logger.warning(f"No expected columns found. Available columns: {output_network.columns.tolist()}")
+                    if len(output_network.columns) >= 2:
+                        output_network = output_network.iloc[:, :2].copy()
+                        output_network.columns = ['Gene1', 'Gene2']
+                        output_network['weights_combined'] = 1.0
+                    else:
+                        output_network = pd.DataFrame(columns=['Gene1', 'Gene2', 'weights_combined'])
+                
+                grn_output_path = os.path.join(save_path, 'grn.csv')
+                output_network.to_csv(grn_output_path, index=False)
+                
+                logger.info(f"Inferelator completed successfully. Output saved to {grn_output_path}")
+            else:
+                logger.warning("InferelatorResults object does not have 'network' attribute")
+                empty_df = pd.DataFrame(columns=['Gene1', 'Gene2', 'weights_combined'])
+                empty_df.to_csv(os.path.join(save_path, 'grn.csv'), index=False)
+        else:
+            logger.warning("Inferelator returned empty results")
+            empty_df = pd.DataFrame(columns=['Gene1', 'Gene2', 'weights_combined'])
+            empty_df.to_csv(os.path.join(save_path, 'grn.csv'), index=False)
+    except Exception as e:
+        logger.error(f"Error running Inferelator: {str(e)}")
+        empty_df = pd.DataFrame(columns=['Gene1', 'Gene2', 'weights_combined'])
+        empty_df.to_csv(os.path.join(save_path, 'grn.csv'), index=False)
+        return False
+    
+    return True
+
 def baseline_compare(args,logger):
-    run_Random(args,'Random',logger)
     run_NetREX(args,'NetREX',logger)
-    run_CEFCON(args,'CEFCON',logger)
-    run_Celloracle(args,'Celloracle',logger)
-    run_GRNBoost2(args,'GRNBoost2',logger)
-    run_GENIE3(args,'GENIE3',logger)
+    run_Inferelator(args,'Inferelator',logger)
+    run_Random(args,'Random',logger)
     run_prior_Random(args,'Prior_Random',logger)
+    run_GENIE3(args,'GENIE3',logger)
+    run_GRNBoost2(args,'GRNBoost2',logger)
+    run_CEFCON(args,'CEFCON',logger)
