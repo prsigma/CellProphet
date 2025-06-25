@@ -1,4 +1,4 @@
-# TRIGON: Dissecting dynamic gene regulatory network using transformer-based temporal causality analysis
+# TRIGON: Dissecting dynamic gene regulatory network using self-supervised temporal causality analysis
 
 > ✨Decoding dynamic gene regulatory networks during cell development and disease progression
 
@@ -70,21 +70,36 @@ TRIGON accepts the following data as input:
 1. scRNA-seq data and pseudotime information are stored in the `BEELINE-data` folder, with the following structure:
     ```
     BEELINE-data/
+    ├── hESC
+    │   ├── DEgenes_MAST_sp4_PseudoTime.csv
+    │   ├── ExpressionData.csv
+    │   ├── GeneOrdering.csv
+    │   └── PseudoTime.csv
+    ├── hHep
+    │   ├── DEgenes_MAST_sp4_PseudoTime.csv
+    │   ├── ExpressionData.csv
+    │   ├── GeneOrdering.csv
+    │   └── PseudoTime.csv
+    ├── mDC
+    │   ├── DEgenes_MAST_sp4_PseudoTime.csv
+    │   ├── ExpressionData.csv
+    │   ├── GeneOrdering.csv
+    │   └── PseudoTime.csv
     ├── mESC
-    │   ├── DEgenes_MAST_sp4_PseudoTime.csv
-    │   ├── ExpressionData.csv
-    │   ├── GeneOrdering.csv
-    │   └── PseudoTime.csv
+    │   ├── DEgenes_MAST_sp4_PseudoTime.csv
+    │   ├── ExpressionData.csv
+    │   ├── GeneOrdering.csv
+    │   └── PseudoTime.csv
     ├── mHSC-E
-    │   ├── DEgenes_MAST_sp4_PseudoTime.csv
-    │   ├── ExpressionData.csv
-    │   ├── GeneOrdering.csv
-    │   └── PseudoTime.csv
+    │   ├── DEgenes_MAST_sp4_PseudoTime.csv
+    │   ├── ExpressionData.csv
+    │   ├── GeneOrdering.csv
+    │   └── PseudoTime.csv
     ├── mHSC-GM
-    │   ├── DEgenes_MAST_sp4_PseudoTime.csv
-    │   ├── ExpressionData.csv
-    │   ├── GeneOrdering.csv
-    │   └── PseudoTime.csv
+    │   ├── DEgenes_MAST_sp4_PseudoTime.csv
+    │   ├── ExpressionData.csv
+    │   ├── GeneOrdering.csv
+    │   └── PseudoTime.csv
     └── mHSC-L
         ├── DEgenes_MAST_sp4_PseudoTime.csv
         ├── ExpressionData.csv
@@ -95,16 +110,24 @@ TRIGON accepts the following data as input:
 2. Prior gene interaction network is stored in the `Prior` folder, with the following structure:
     ```
     Prior/
-    └── network_mouse.csv
+    ├── network_human_merged.csv
+    └── network_mouse_merged.csv
     ```
-    We provide the prior gene interaction network for mouse extracted from [NicheNet](https://nichenet.be/), which includes two columns representing the potential regulatory genes and their target genes.
+    We provide the prior gene interaction network for human and mouse extracted from [NicheNet](https://nichenet.be/), which includes two columns representing the potential regulatory genes and their target genes.
 3. Ground truth gene interaction network is stored in the `BEELINE-Networks` folder, with the following structure:
     ```
     BEELINE-Networks/
+    ├── hESC-ChIP-seq-network.csv
+    ├── hHep-ChIP-seq-network.csv
+    ├── mDC-ChIP-seq-network.csv
     ├── mESC-ChIP-seq-network.csv
     └── mHSC-ChIP-seq-network.csv
     ```
-    `mESC-ChIP-seq-network.csv` contains the ChIP-seq data for mESC dataset, and `mHSC-ChIP-seq-network.csv` contains the ChIP-seq data for mHSC dataset.
+    `hESC-ChIP-seq-network.csv` contains the ChIP-seq data for hESC dataset,
+    `hHep-ChIP-seq-network.csv` contains the ChIP-seq data for hHep dataset,
+    `mDC-ChIP-seq-network.csv` contains the ChIP-seq data for mDC dataset,
+    `mESC-ChIP-seq-network.csv` contains the ChIP-seq data for mESC dataset and  `mHSC-ChIP-seq-network.csv` contains the ChIP-seq data for mHSC dataset,
+    ``
 
 ## Training & Inference
 We created a shell script `run.sh` to run the training process. The script integrates all the datasets we use (mESC, mHSC-GM, mHSC-L, mHSC-E), allowing us to obtain results for all datasets in one run. You can use the following code to run TRIGON:
@@ -117,6 +140,36 @@ bash run.sh
 A `output` folder in current directory will be generated, which will contain four subfolders named after the datasets, with the following structure:
 ```
 output/
+├── hESC
+│   ├── allNodes.csv
+│   ├── end_tf.csv
+│   ├── expression.csv
+│   ├── gt_grn.csv  
+│   └── TRIGON
+│       ├── checkpoint.pth   #trained model file
+│       ├── grn.csv         #inferred GRN for hESC
+│       ├── trigon_cell_sort.csv
+│       └── trigon_expression.csv
+├── hHep
+│   ├── allNodes.csv
+│   ├── end_tf.csv
+│   ├── expression.csv
+│   ├── gt_grn.csv
+│   └── TRIGON
+│       ├── checkpoint.pth   #trained model file
+│       ├── grn.csv         #inferred GRN for hHep
+│       ├── trigon_cell_sort.csv
+│       └── trigon_expression.csv
+├── mDC
+│   ├── allNodes.csv
+│   ├── end_tf.csv
+│   ├── expression.csv
+│   ├── gt_grn.csv
+│   └── TRIGON
+│       ├── checkpoint.pth   #trained model file
+│       ├── grn.csv         #inferred GRN for mDC
+│       ├── trigon_cell_sort.csv
+│       └── trigon_expression.csv
 ├── mESC
 │   ├── allNodes.csv
 │   ├── end_tf.csv
@@ -167,6 +220,8 @@ We provide the code for reproducing the results of the baseline models in `basel
 - [GRNBoost2](https://academic.oup.com/bioinformatics/article/35/12/2159/5184284) (*2019 Bioinformatics*)
 - [NetREX](https://www.nature.com/articles/s41467-018-06382-z) (*2018 Nature Communications*)
 - [GENIE3](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0012776) (*highly cited paper*)
+- [GRANGER](https://academic.oup.com/bib/article/26/2/bbaf089/8068119) (2025 Briefings in Bioinformatics)
+- [Inferelator](https://academic.oup.com/bioinformatics/article/38/9/2519/6533443?login=false) (2022 Bioinformatics)
 - Random: Used to evaluate the performance of randomly selecting edges as the inferred GRN.
 - Prior_Random: Used to evaluate the performance of randomly selecting edges from the prior network as the inferred GRN.
 1. You can simply use the following command to run the baseline models:
@@ -196,10 +251,14 @@ output/
 │   ├── GENIE3
 │   │   ├── grn.csv     #inferred GRN for GENIE3 of mESC
 │   │   └── tf_names.txt
+│   ├── GRANGER
+│   │   └── grn.csv     #inferred GRN for GRANGER of mESC
 │   ├── GRNBoost2
 │   │   ├── grn.csv     #inferred GRN for GRNBoost2 of mESC
 │   │   └── tf_names.txt
 │   ├── gt_grn.csv      #ground truth GRN of mESC
+│   ├── Inferelator
+│   │   └── grn.csv     #inferred GRN for Inferelator of mESC
 │   ├── NetREX
 │   │   ├── expression.txt
 │   │   ├── grn.csv     #inferred GRN for NetREX of mESC
@@ -228,10 +287,14 @@ output/
 │   ├── GENIE3
 │   │   ├── grn.csv     #inferred GRN for GENIE3 of mHSC-E
 │   │   └── tf_names.txt
+│   ├── GRANGER
+│   │   └── grn.csv     #inferred GRN for GRANGER of mHSC-E
 │   ├── GRNBoost2
 │   │   ├── grn.csv     #inferred GRN for GRNBoost2 of mHSC-E
 │   │   └── tf_names.txt
 │   ├── gt_grn.csv      #ground truth GRN of mHSC-E
+│   ├── Inferelator
+│   │   └── grn.csv     #inferred GRN for Inferelator of mHSC-E
 │   ├── NetREX
 │   │   ├── expression.txt
 │   │   ├── grn.csv     #inferred GRN for NetREX of mHSC-E
@@ -260,10 +323,14 @@ output/
 │   ├── GENIE3
 │   │   ├── grn.csv     #inferred GRN for GENIE3 of mHSC-GM
 │   │   └── tf_names.txt
+│   ├── GRANGER
+│   │   └── grn.csv     #inferred GRN for GRANGER of mHSC-GM
 │   ├── GRNBoost2
 │   │   ├── grn.csv     #inferred GRN for GRNBoost2 of mHSC-GM
 │   │   └── tf_names.txt
 │   ├── gt_grn.csv      #ground truth GRN of mHSC-GM
+│   ├── Inferelator
+│   │   └── grn.csv     #inferred GRN for Inferelator of mHSC-GM
 │   ├── NetREX
 │   │   ├── expression.txt
 │   │   ├── grn.csv     #inferred GRN for NetREX of mHSC-GM
@@ -281,38 +348,151 @@ output/
 │       ├── grn.csv     #inferred GRN for TRIGON of mHSC-GM
 │       ├── trigon_cell_sort.csv
 │       └── trigon_expression.csv
-└── mHSC-L
+├── mHSC-L
+│   ├── allNodes.csv
+│   ├── CEFCON
+│   │   └── cell_lineage_GRN.csv    #inferred GRN for CEFCON of mHSC-L
+│   ├── Celloracle
+│   │   └── grn.csv     #inferred GRN for Celloracle of mHSC-L
+│   ├── end_tf.csv
+│   ├── expression.csv
+│   ├── GENIE3
+│   │   ├── grn.csv     #inferred GRN for GENIE3 of mHSC-L
+│   │   └── tf_names.txt
+│   ├── GRANGER
+│   │   └── grn.csv     #inferred GRN for GRANGER of mHSC-L
+│   ├── GRNBoost2
+│   │   ├── grn.csv     #inferred GRN for GRNBoost2 of mHSC-L
+│   │   └── tf_names.txt
+│   ├── gt_grn.csv      #ground truth GRN of mHSC-L
+│   ├── Inferelator
+│   │   └── grn.csv     #inferred GRN for Inferelator of mHSC-L
+│   ├── NetREX
+│   │   ├── expression.txt
+│   │   ├── grn.csv     #inferred GRN for NetREX of mHSC-L
+│   │   ├── NetREX_PredictedEdgeList.txt
+│   │   ├── NetREX_PredictedNetwork.tsv
+│   │   └── prior_grn.txt
+│   ├── pr_curve.png    #PR curve of all methods for mHSC-L
+│   ├── Prior_Random
+│   │   └── grn.csv     #inferred GRN for Prior_Random of mHSC-L
+│   ├── Random
+│   │   └── grn.csv     #inferred GRN for Random of mHSC-L
+│   ├── roc_curve.png   #ROC curve of all methods for mHSC-L    
+│   └── TRIGON
+│       ├── checkpoint.pth
+│       ├── grn.csv     #inferred GRN for TRIGON of mHSC-L
+│       ├── trigon_cell_sort.csv
+│       └── trigon_expression.csv
+├── hHep
+│   ├── allNodes.csv
+│   ├── CEFCON
+│   │   └── cell_lineage_GRN.csv    #inferred GRN for CEFCON of hHep
+│   ├── Celloracle
+│   │   └── grn.csv     #inferred GRN for Celloracle of hHep
+│   ├── end_tf.csv
+│   ├── expression.csv
+│   ├── GENIE3
+│   │   ├── grn.csv     #inferred GRN for GENIE3 of hHep
+│   │   └── tf_names.txt
+│   ├── GRANGER
+│   │   └── grn.csv     #inferred GRN for GRANGER of hHep
+│   ├── GRNBoost2
+│   │   ├── grn.csv     #inferred GRN for GRNBoost2 of hHep
+│   │   └── tf_names.txt
+│   ├── gt_grn.csv      #ground truth GRN of hHep
+│   ├── Inferelator
+│   │   └── grn.csv     #inferred GRN for Inferelator of hHep
+│   ├── NetREX
+│   │   ├── expression.txt
+│   │   ├── grn.csv     #inferred GRN for NetREX of hHep
+│   │   ├── NetREX_PredictedEdgeList.txt
+│   │   ├── NetREX_PredictedNetwork.tsv
+│   │   └── prior_grn.txt
+│   ├── pr_curve.png    #PR curve of all methods for hHep
+│   ├── Prior_Random
+│   │   └── grn.csv     #inferred GRN for Prior_Random of hHep
+│   ├── Random
+│   │   └── grn.csv     #inferred GRN for Random of hHep
+│   ├── roc_curve.png   #ROC curve of all methods for hHep
+│   └── TRIGON
+│       ├── checkpoint.pth
+│       ├── grn.csv     #inferred GRN for TRIGON of hHep
+│       ├── trigon_cell_sort.csv
+│       └── trigon_expression.csv
+├── hESC
+│   ├── allNodes.csv
+│   ├── CEFCON
+│   │   └── cell_lineage_GRN.csv    #inferred GRN for CEFCON of hESC
+│   ├── Celloracle
+│   │   └── grn.csv     #inferred GRN for Celloracle of hESC
+│   ├── end_tf.csv
+│   ├── expression.csv
+│   ├── GENIE3
+│   │   ├── grn.csv     #inferred GRN for GENIE3 of hESC
+│   │   └── tf_names.txt
+│   ├── GRANGER
+│   │   └── grn.csv     #inferred GRN for GRANGER of hESC
+│   ├── GRNBoost2
+│   │   ├── grn.csv     #inferred GRN for GRNBoost2 of hESC
+│   │   └── tf_names.txt
+│   ├── gt_grn.csv      #ground truth GRN of hESC
+│   ├── Inferelator
+│   │   └── grn.csv     #inferred GRN for Inferelator of hESC
+│   ├── NetREX
+│   │   ├── expression.txt
+│   │   ├── grn.csv     #inferred GRN for NetREX of hESC
+│   │   ├── NetREX_PredictedEdgeList.txt
+│   │   ├── NetREX_PredictedNetwork.tsv
+│   │   └── prior_grn.txt
+│   ├── pr_curve.png    #PR curve of all methods for hESC
+│   ├── Prior_Random
+│   │   └── grn.csv     #inferred GRN for Prior_Random of hESC
+│   ├── Random
+│   │   └── grn.csv     #inferred GRN for Random of hESC
+│   ├── roc_curve.png   #ROC curve of all methods for hESC
+│   └── TRIGON
+│       ├── checkpoint.pth
+│       ├── grn.csv     #inferred GRN for TRIGON of hESC
+│       ├── trigon_cell_sort.csv
+│       └── trigon_expression.csv
+└── mDC
     ├── allNodes.csv
     ├── CEFCON
-    │   └── cell_lineage_GRN.csv    #inferred GRN for CEFCON of mHSC-L
+    │   └── cell_lineage_GRN.csv    #inferred GRN for CEFCON of mDC
     ├── Celloracle
-    │   └── grn.csv     #inferred GRN for Celloracle of mHSC-L
+    │   └── grn.csv     #inferred GRN for Celloracle of mDC
     ├── end_tf.csv
     ├── expression.csv
     ├── GENIE3
-    │   ├── grn.csv     #inferred GRN for GENIE3 of mHSC-L
+    │   ├── grn.csv     #inferred GRN for GENIE3 of mDC
     │   └── tf_names.txt
+    ├── GRANGER
+    │   └── grn.csv     #inferred GRN for GRANGER of mDC
     ├── GRNBoost2
-    │   ├── grn.csv     #inferred GRN for GRNBoost2 of mHSC-L
+    │   ├── grn.csv     #inferred GRN for GRNBoost2 of mDC
     │   └── tf_names.txt
-    ├── gt_grn.csv      #ground truth GRN of mHSC-L
+    ├── gt_grn.csv      #ground truth GRN of mDC
+    ├── Inferelator
+    │   └── grn.csv     #inferred GRN for Inferelator of mDC
     ├── NetREX
     │   ├── expression.txt
-    │   ├── grn.csv     #inferred GRN for NetREX of mHSC-L
+    │   ├── grn.csv     #inferred GRN for NetREX of mDC
     │   ├── NetREX_PredictedEdgeList.txt
     │   ├── NetREX_PredictedNetwork.tsv
     │   └── prior_grn.txt
-    ├── pr_curve.png    #PR curve of all methods for mHSC-L
+    ├── pr_curve.png    #PR curve of all methods for mDC
     ├── Prior_Random
-    │   └── grn.csv     #inferred GRN for Prior_Random of mHSC-L
+    │   └── grn.csv     #inferred GRN for Prior_Random of mDC
     ├── Random
-    │   └── grn.csv     #inferred GRN for Random of mHSC-L
-    ├── roc_curve.png   #ROC curve of all methods for mHSC-L    
+    │   └── grn.csv     #inferred GRN for Random of mDC
+    ├── roc_curve.png   #ROC curve of all methods for mDC
     └── TRIGON
         ├── checkpoint.pth
-        ├── grn.csv     #inferred GRN for TRIGON of mHSC-L
+        ├── grn.csv     #inferred GRN for TRIGON of mDC
         ├── trigon_cell_sort.csv
         └── trigon_expression.csv
+
 ```
 
 ## Data for ATAC & Hi-C
