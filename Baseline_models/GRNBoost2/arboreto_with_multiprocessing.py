@@ -22,6 +22,19 @@ from arboreto.core import (
 from arboreto.utils import load_tf_names
 
 from pyscenic.cli.utils import load_exp_matrix, suffixes_to_separator
+import torch
+import numpy as np
+import random
+
+def seed_everything(seed):
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+
+seed_everything(2024)
 
 
 def create_argument_parser():

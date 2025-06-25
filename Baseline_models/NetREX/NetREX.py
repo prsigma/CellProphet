@@ -10,9 +10,21 @@ import argparse
 import warnings
 import progressbar
 import os
+import torch
+import random
+
+def seed_everything(seed):
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+
 
 # hide warnings
 warnings.filterwarnings('ignore')
+seed_everything(2024)
 
 class NetREX:
     def __init__(self, ExpFile, PriorFile, mu = 1.0, kappa = 1.0, xi = 0.4, IterNum = 1000, Sbound = 1.0, Abound = 1.0):
