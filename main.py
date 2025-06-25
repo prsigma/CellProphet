@@ -21,7 +21,7 @@ from baseline_models import baseline_compare
 
 seed_everything(2024)
 change_into_current_py_path()     
-logger = set_logger()      
+logger = set_logger()   
 
 def preprocess_data(args,logger):
     logger.info(f'\n****************preprocessing data**********************')
@@ -31,15 +31,12 @@ def preprocess_data(args,logger):
 
     pval_cutoff = 0.01
     select_variable_genes = 2000
-
     
     expr_df = pd.read_csv(args.data_path, header=0, index_col=0)
     expr_df.index = expr_df.index.map(lambda x: x.upper()) 
 
-    
     different_gene = pd.read_csv(args.gene_order,header=0,index_col=0)
     different_gene.index = different_gene.index.map(lambda x: x.upper())
-    
     
     expr_variable_genes = sorted(set(different_gene.index.values) & set(expr_df.index.values))
     extra_genes = sorted(set(different_gene.index.values) - set(expr_df.index.values))
@@ -48,19 +45,15 @@ def preprocess_data(args,logger):
         print(extra_genes)
         different_gene = different_gene.loc[expr_variable_genes]
 
-    
     pval_col = different_gene.columns[0]
     different_gene.sort_values(by=pval_col, ascending=True,inplace=True)
 
-   
     pval_cutoff = pval_cutoff / float(len(different_gene.index))
     print("\nUsing the BF-corrected p-value cutoff of %s (%s / %s genes)" % (
         pval_cutoff, pval_cutoff*float(len(different_gene.index)), len(different_gene.index)))
 
-    
     variable_genes = different_gene[different_gene[pval_col] < pval_cutoff].index.values
     print("\n%d genes pass pval_cutoff of %s" % (len(variable_genes), pval_cutoff))
-    
     
     different_gene = different_gene.filter(items = variable_genes, axis='index')
 
@@ -71,90 +64,41 @@ def preprocess_data(args,logger):
         different_gene.sort_values(by=var_col, inplace=True, ascending = False)
         end_variable_genes = different_gene.iloc[:select_variable_genes].index.tolist()
 
-   
     print("\nRestricting to %d genes" % (len(end_variable_genes)))
     
-    
     expr_df = expr_df.loc[end_variable_genes]
-    
     
     tf_df = pd.read_csv(args.tf_path, header=0)
     tfs = tf_df[tf_df.columns[0]].drop_duplicates()
     tfs = tfs.map(lambda x: x.upper())
     end_tf = sorted(set(end_variable_genes) & set(tfs))
 
-    
     print('\nloading ground truth...')
     gt_grn = pd.read_csv(args.gt_path)
-    
     
     gt_grn = gt_grn[(gt_grn.Gene1.isin(end_tf)) & (gt_grn.Gene2.isin(end_variable_genes))]
     # Remove self-loops.
     gt_grn = gt_grn[gt_grn.Gene1 != gt_grn.Gene2]
     # Remove duplicates (there are some repeated lines in the ground-truth networks!!!). 
-    gt_grn.drop_duplicates(keep = 'first', inplace=True)
+    gt_grn.drop_duplicates(subset=['Gene1','Gene2'],keep = 'first', inplace=True)
     
-   
     allNodes = sorted(set(gt_grn.Gene1.unique()).union(set(gt_grn.Gene2.unique())))
     end_tf = sorted(set(allNodes) & set(end_tf))
 
-    
     expr_df = expr_df[expr_df.index.isin(allNodes)]
     print("\nNew shape of Expression Data %d x %d" % (expr_df.shape[0],expr_df.shape[1]))
-    
     
     expression_path = os.path.join(save_path,'expression.csv')
     expr_df.T.to_csv(expression_path)       #cell * gene
 
-    
     gt_grn_path = os.path.join(save_path,'gt_grn.csv')
     gt_grn.to_csv(gt_grn_path,index=False)
 
-    
     pd.DataFrame({'tf':end_tf}).to_csv(os.path.join(args.output_dir,args.dataset_name,'end_tf.csv'))
 
-    
     pd.DataFrame({'allNodes':allNodes}).to_csv(os.path.join(args.output_dir,args.dataset_name,'allNodes.csv'))
 
     return True
-
-def parse_args():
-    parser = argparse.ArgumentParser(description='expriments for TRIGON')
-
-    parser.add_argument('--data_source', type=str, required=True, choices=['BEELINE', 'others'], help='Specify the data source')
-    parser.add_argument('--dataset_name',type=str,required=True, help='name of dataset')
-    parser.add_argument('--data_path', type=str, required=True, help='expression data file') 
-    parser.add_argument('--output_dir', type=str, required=True, help='location to store results')
-    parser.add_argument('--tf_path',type=str, required=True, help='tf file')
-    parser.add_argument('--species',type=str,required=True,choices=['mouse','human'],help='species')
-    
-    parser.add_argument('--gt_path',type=str,help='ground truth file') 
-    parser.add_argument('--time_info',type=str, help='PseudoTime file')
-    parser.add_argument('--gene_order',type=str)
-    parser.add_argument('--logFC_path',type=str,help='logFC')
-
-    #测试
-    parser.add_argument('--baseline',action='store_true',help='compare with baseline')
-    parser.add_argument('--index',type=int,default=-1)
-    
-    #model
-    parser.add_argument('--cuda_index',type=int)
-    parser.add_argument('--input_length',type=int, default=16, help='input length')
-    parser.add_argument('--predict_length',type=int,default=16,help='output length')
-    parser.add_argument('--d_model', type=int, default=128, help='dimension of hidden states of time layer transformer')
-    parser.add_argument('--d_ff', type=int, default=512, help='dimension of MLP in transformer')
-    parser.add_argument('--heads', type=int, default=4, help='num of heads')
-    parser.add_argument('--dropout', type=float, default=0.1, help='dropout')
-    parser.add_argument('--batch_size',type=int,default=4,help='batch size')
-    parser.add_argument('--encoder_layers',default=4,type=int,help='layers of transformer')
-    parser.add_argument('--epochs', type=int, default=20, help='train epochs')
-    parser.add_argument('--learning_rate', type=float, default=1e-4, help='optimizer initial learning rate')
-    parser.add_argument('--num_workers',type=int,default=8)
-    parser.add_argument('--patience',type=int,default=3)
-
-    args = parser.parse_args()
-
-    return args
 
 def preprocess_data_for_trigon(args):
     expression_path = os.path.join(args.output_dir,args.dataset_name,'expression.csv')
@@ -170,14 +114,13 @@ def preprocess_data_for_trigon(args):
     logFC_value['primerid'] = logFC_value['primerid'].map(lambda x: x.upper())
     logFC_value = logFC_value.loc[logFC_value['primerid'].isin(allNodes)]
 
-   
     print('\nloading prior knowledge...')
     # prior_grn = pd.read_csv('./%s_prior_GRN.csv' % args.species)
     
     if args.species == 'human':
-        prior_grn = pd.read_csv('Prior/network_human.csv',index_col=0)
+        prior_grn = pd.read_csv('Prior/network_human_merged.csv',index_col=0)
     else:
-        prior_grn = pd.read_csv('Prior/network_mouse.csv',index_col=0)
+        prior_grn = pd.read_csv('Prior/network_mouse_merged.csv',index_col=0)
     
     prior_grn['from'] = prior_grn['from'].map(lambda x: x.upper())
     prior_grn['to'] = prior_grn['to'].map(lambda x: x.upper())
@@ -190,12 +133,12 @@ def preprocess_data_for_trigon(args):
     prior_grn = prior_grn.iloc[:,:2]
     prior_grn.columns = ['Gene1','Gene2']
 
-    
+    print("prior_grn:",len(prior_grn))
+
     gene_id_map = {x:y for y,x in enumerate(allNodes)}   
     id_gene_df = pd.DataFrame({'id': range(len(allNodes)),
                                     'geneName': allNodes},index=range(len(allNodes)))
     
-   
     no_regulate_genes = sorted(set(allNodes) - set(prior_grn.Gene2.unique()))
     no_regulate_genes_index = [gene_id_map[x] for x in no_regulate_genes]
 
@@ -269,6 +212,44 @@ def preprocess_data_for_trigon(args):
 
     return expression_data, dropout_mask, size, prior_mask, id_gene_df,no_regulate_genes_index,logFC_value,prior_grn
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='expriments for TRIGON')
+
+    parser.add_argument('--data_source', type=str, required=True, choices=['BEELINE', 'others'], help='Specify the data source')
+    parser.add_argument('--dataset_name',type=str,required=True, help='name of dataset')
+    parser.add_argument('--data_path', type=str, required=True, help='expression data file') 
+    parser.add_argument('--output_dir', type=str, required=True, help='location to store results')
+    parser.add_argument('--tf_path',type=str, required=True, help='tf file')
+    parser.add_argument('--species',type=str,required=True,choices=['mouse','human'],help='species')
+    
+    parser.add_argument('--gt_path',type=str,help='ground truth file') 
+    parser.add_argument('--time_info',type=str, help='PseudoTime file')
+    parser.add_argument('--gene_order',type=str)
+    parser.add_argument('--logFC_path',type=str,help='logFC')
+
+    #测试
+    parser.add_argument('--baseline',action='store_true',help='compare with baseline')
+    parser.add_argument('--index',type=int,default=-1)
+    
+    #model
+    parser.add_argument('--cuda_index',type=int)
+    parser.add_argument('--input_length',type=int, default=16, help='input length')
+    parser.add_argument('--predict_length',type=int,default=16,help='output length')
+    parser.add_argument('--d_model', type=int, default=128, help='dimension of hidden states of time layer transformer')
+    parser.add_argument('--d_ff', type=int, default=512, help='dimension of MLP in transformer')
+    parser.add_argument('--heads', type=int, default=4, help='num of heads')
+    parser.add_argument('--dropout', type=float, default=0.1, help='dropout')
+    parser.add_argument('--batch_size',type=int,default=4,help='batch size')
+    parser.add_argument('--encoder_layers',default=4,type=int,help='layers of transformer')
+    parser.add_argument('--epochs', type=int, default=20, help='train epochs')
+    parser.add_argument('--learning_rate', type=float, default=1e-4, help='optimizer initial learning rate')
+    parser.add_argument('--num_workers',type=int,default=8)
+    parser.add_argument('--patience',type=int,default=3)
+
+    args = parser.parse_args()
+
+    return args
+
 def val(model, args, val_loader, criterion, prior_mask,no_tf_genes_index):
     total_loss = []
     model.eval()
@@ -286,31 +267,29 @@ def val(model, args, val_loader, criterion, prior_mask,no_tf_genes_index):
     model.train()
     return total_loss
 
-def get_grn(predict_grn,id_gene_df,logFC_value,prior_grn):
+def get_grn(predict_grn,id_gene_df,logFC_value,degree):
     
-    edge_df = predict_grn[['Gene1','Gene2']]
-    edge_index = edge_df.values
-    
-    ## Scaled the attention coefficients for global ranking
-    g = nx.from_edgelist(edge_index, create_using=nx.DiGraph)
-    degree = pd.DataFrame(g.out_degree(), columns=['index', 'degree'])
-    
+    degree['index'] = degree['index'].astype(predict_grn['Gene1'].dtype)
     temp_grn = pd.merge(predict_grn,degree,left_on='Gene1',right_on='index',how='left')
-    logFC_value['logFC_gene'] = logFC_value['primerid'].map(lambda x: id_gene_df[id_gene_df['geneName'] == x]['id'].values[0])
+
+    gene_to_id_dict = dict(zip(id_gene_df['geneName'], id_gene_df['id']))
+    logFC_value['logFC_gene'] = logFC_value['primerid'].map(lambda x: gene_to_id_dict.get(x))
     
-    weighted_grn = pd.merge(temp_grn,logFC_value,left_on='index',right_on='logFC_gene',how='left')
+    weighted_grn = pd.merge(temp_grn,logFC_value,left_on='Gene1',right_on='logFC_gene',how='left')
     weighted_grn = weighted_grn.dropna()
-    weighted_grn['target_gene'] = weighted_grn['Gene2'].map(lambda x: id_gene_df[id_gene_df['id'] == x]['geneName'].values[0])    
+
+    id_to_gene_dict = dict(zip(id_gene_df['id'], id_gene_df['geneName']))
+    weighted_grn['target_gene'] = weighted_grn['Gene2'].map(lambda x: id_to_gene_dict.get(x))
     
     weighted_grn['target_gene_different'] = 0
-    for index,row in weighted_grn.iterrows():
-        target_gene = row['target_gene']
-        try:
-            logFC = logFC_value[logFC_value['primerid'] == target_gene]['logFC'].values[0]
-            if logFC >= 1.0:
-                weighted_grn.loc[index,'target_gene_different'] = 1
-        except:
-            pass
+    target_gene_logFC_dict = {}
+    for _, row in logFC_value.iterrows():
+        target_gene_logFC_dict[row['primerid']] = row['logFC']
+    
+    weighted_grn['target_gene_different'] = weighted_grn.apply(
+        lambda row: 1 if target_gene_logFC_dict.get(row['target_gene'], 0) >= 1.0 else 0, 
+        axis=1
+    )
     
     temp = weighted_grn.groupby('Gene1')['target_gene_different'].sum().reset_index().rename(columns={'target_gene_different':'whole_target_gene_different'})
     weighted_grn = pd.merge(weighted_grn,temp,on='Gene1',how='left')
@@ -334,7 +313,7 @@ def get_grn(predict_grn,id_gene_df,logFC_value,prior_grn):
     
     return end_grn
 
-def test(args,save_path,checkpoint_path,expression_data,id_gene_df,size,prior_mask,no_tf_genes_index,logFC_value,prior_grn):
+def test(args,save_path,checkpoint_path,expression_data,id_gene_df,size,prior_mask,no_tf_genes_index,logFC_value,degree):
     print("\ntesting...")
     test_data_set = Test_data(expression_data,size)
     test_data_loader = DataLoader(
@@ -359,11 +338,15 @@ def test(args,save_path,checkpoint_path,expression_data,id_gene_df,size,prior_ma
         for (batch_x) in tqdm(test_data_loader):
             batch_x = batch_x.float().to(args.device)
             outputs, attention = model(batch_x, prior_mask,no_tf_genes_index)
+            
+            attention = attention.squeeze()
+            attention = torch.mean(attention, dim=0)
+            
             attention_list.append(attention.squeeze())
 
         attention_value = torch.stack(attention_list).cpu().numpy()
+        # mean_attention = np.mean(attention_value, axis=0)
         mean_attention = np.mean(attention_value, axis=0)
-        mean_attention = np.mean(mean_attention, axis=0)
 
         num_nodes = mean_attention.shape[0]
         mat_indicator_all = np.zeros([num_nodes, num_nodes])
@@ -374,7 +357,7 @@ def test(args,save_path,checkpoint_path,expression_data,id_gene_df,size,prior_ma
             {'Gene1': idx_send, 'Gene2': idx_rec, 'value': mean_attention[idx_rec,idx_send]})
 
         predict_grn = predict_grn[predict_grn['Gene1'] != predict_grn['Gene2']]
-        predict_grn = get_grn(predict_grn,id_gene_df,logFC_value,prior_grn)
+        predict_grn = get_grn(predict_grn,id_gene_df,logFC_value,degree)
 
         predict_grn = predict_grn.sort_values('weights_combined',ascending=False)
         predict_grn.to_csv(os.path.join(save_path,'grn.csv'))
@@ -401,7 +384,17 @@ def main():
         baseline_compare(args,logger)
     else:
         # preprocess TRIGON data
-        expression_data, dropout_mask, size, prior_mask, id_gene_df,no_tf_genes_index,logFC_value,prior_grn = preprocess_data_for_trigon(args) # expression_data (cell * gene)
+        expression_data, dropout_mask, size, prior_mask, id_gene_df,no_regulate_genes_index,logFC_value,prior_grn = preprocess_data_for_trigon(args) # expression_data (cell * gene)
+        
+        gene_to_id = dict(zip(id_gene_df['geneName'], id_gene_df['id']))
+        prior_grn['Gene1_id'] = prior_grn['Gene1'].map(gene_to_id)
+        prior_grn['Gene2_id'] = prior_grn['Gene2'].map(gene_to_id)
+
+        # get prior improtance
+        edge_df = prior_grn[['Gene1_id','Gene2_id']]
+        edge_index = edge_df.values
+        g = nx.from_edgelist(edge_index, create_using=nx.DiGraph)
+        degree = pd.DataFrame(g.out_degree(), columns=['index', 'degree'])
 
         train_data_set = Train_data(expression_data,dropout_mask,size,'train')
         train_data_loader = DataLoader(
@@ -444,7 +437,7 @@ def main():
                 batch_y = batch_y.float().to(args.device)
                 batch_y_mask = batch_y_mask.to(args.device)
 
-                outputs, _, = model(batch_x,prior_mask,no_tf_genes_index)
+                outputs, _, = model(batch_x,prior_mask,no_regulate_genes_index)
 
                 loss = criterion(outputs * batch_y_mask, batch_y * batch_y_mask)
 
@@ -453,7 +446,7 @@ def main():
                 model_optim.step()
                                 
             lr_scheduler.step()            
-            val_loss = val(model, args, val_data_loader, criterion, prior_mask,no_tf_genes_index)
+            val_loss = val(model, args, val_data_loader, criterion, prior_mask,no_regulate_genes_index)
 
             if args.index != -1:
                 checkpoint_path = os.path.join(save_path,f'checkpoint_{args.index}.pth')
@@ -465,7 +458,7 @@ def main():
                 logger.info("Early stopping")
                 break
         torch.save(early_stopping.best_model,checkpoint_path)
-        test(args,save_path,checkpoint_path,expression_data,id_gene_df,size,prior_mask,no_tf_genes_index,logFC_value,prior_grn)
+        test(args,save_path,checkpoint_path,expression_data,id_gene_df,size,prior_mask,no_regulate_genes_index,logFC_value,degree)
 
 if __name__ == "__main__":
     main()    
