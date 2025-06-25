@@ -3,14 +3,19 @@
 SCRIPT_DIR=$(dirname "$0")
 cd "$SCRIPT_DIR"
 
-datasets=("mESC" "mHSC-GM" "mHSC-L" "mHSC-E")
+datasets=("mESC" "mHSC-GM" "mHSC-L" "mHSC-E" "hESC" "hHep" "mDC")
 output_dir="./output"
 
 for dataset in "${datasets[@]}"; do
     echo "Processing dataset: $dataset"
 
-    species='mouse'
-    tf_path="./TF/mouse-tfs.csv"
+    if [[ $dataset == h* ]]; then
+        species='human'
+        tf_path="./TF/human-tfs.csv"
+    else
+        species='mouse'
+        tf_path="./TF/mouse-tfs.csv"
+    fi
    
     if [[ $dataset == mHSC* ]]; then
         gt_name="mHSC"
