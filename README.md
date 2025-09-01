@@ -1,25 +1,25 @@
-# TRIGON: Dissecting dynamic gene regulatory network using self-supervised temporal causality analysis
+# CellProphet: Simulating Virtual Cell Differentiation through AI- Powered Dynamic Gene Regulatory Network Inference
 
 > ✨Decoding dynamic gene regulatory networks during cell development and disease progression
 
-![Stars](https://img.shields.io/github/stars/prsigma/TRIGON?style=flat-square&color=yellow)
-![Issues](https://img.shields.io/github/issues-raw/prsigma/TRIGON?label=issues&style=flat-square&color=green)
-![License](https://img.shields.io/github/license/prsigma/TRIGON?style=flat-square&color=yellowgreen)
-![Last Commit](https://img.shields.io/github/last-commit/prsigma/TRIGON?label=last%20commit&style=flat-square&color=yellowgreen)
-![Pull Requests](https://img.shields.io/github/issues-pr/prsigma/TRIGON?label=pull%20requests&style=flat-square&color=green)
+![Stars](https://img.shields.io/github/stars/prsigma/CellProphet?style=flat-square&color=yellow)
+![Issues](https://img.shields.io/github/issues-raw/prsigma/CellProphet?label=issues&style=flat-square&color=green)
+![License](https://img.shields.io/github/license/prsigma/CellProphet?style=flat-square&color=yellowgreen)
+![Last Commit](https://img.shields.io/github/last-commit/prsigma/CellProphet?label=last%20commit&style=flat-square&color=yellowgreen)
+![Pull Requests](https://img.shields.io/github/issues-pr/prsigma/CellProphet?label=pull%20requests&style=flat-square&color=green)
 
 ## Overview
-TRIGON is a Transformer-based model that predicts the expression of target genes after time point t through the expression of transcription factors from the previous time points, thereby learning the causal relationships of genes over time. TRIGON achieved the best performance across four differentiation datasets compared to seven baseline methods. On mouse embryonic stem cell dataset, TRIGON successfully identified previously reported transcription factors and discovered a group of potential TFs related to primitive endoderm development. TRIGON is capable of constructing dynamic gene regulatory network with different temporal resolutions, enabling the observation of GRN changes across varying time scales. Finally, we applied TRIGON to mouse hematopoietic stem cell dataset and, through in silico perturbation, reproduced the changes in cell fate following the knockout of Gata1 and Spi1. We believe that TRIGON is an innovative dynamic modeling framework that provides deeper insights into gene regulation during biological differentiation processes.
+CellProphet is a Transformer-based model that predicts the expression of target genes after time point t through the expression of transcription factors from the previous time points, thereby learning the causal relationships of genes over time. CellProphet achieved the best performance across seven differentiation datasets compared to nine baseline methods. On mouse embryonic stem cell dataset, CellProphet successfully identified previously reported transcription factors and discovered a group of potential TFs related to primitive endoderm development. CellProphet is capable of constructing dynamic gene regulatory network with different temporal resolutions, enabling the observation of GRN changes across varying time scales. Finally, we applied CellProphet to mouse hematopoietic stem cell dataset and, through in silico perturbation, reproduced the changes in cell fate following the knockout of Gata1 and Spi1. We believe that CellProphet is an innovative dynamic modeling framework that provides deeper insights into gene regulation during biological differentiation processes.
 
-## Why TRIGON?
-- ⏱️ **Temporal Causality Analysis**: TRIGON decodes gene expression dynamics during cell development by analyzing temporal regulatory relationships.
-- 🔄 **Dynamic GRN Construction**: TRIGON is capable of constructing dynamic gene regulatory network with different temporal resolutions, enabling the observation of GRN changes across varying time scales.
-- 🧬 **In Silico Perturbation**: TRIGON can reproduce the changes in cell fate following the knockout of key transcription factors.
-- 🧫 **Single-modality Excellence**: TRIGON achieves state-of-the-art performance using only scRNA-seq data, outperforming multi-modal methods while requiring less data and information.
-- 🔬 **Broad Applicability**: Unlike multi-modal approaches that require diverse and matched data, TRIGON's single-modality nature makes it highly adaptable and practical for real-world applications across different biological contexts.
-- 💻 **Computational Efficiency**: TRIGON demonstrates superior computational speed compared to existing methods, enabling faster analysis of large-scale datasets.
+## Why CellProphet?
+- ⏱️ **Temporal Causality Analysis**: CellProphet decodes gene expression dynamics during cell development by analyzing temporal regulatory relationships.
+- 🔄 **Dynamic GRN Construction**: CellProphet is capable of constructing dynamic gene regulatory network with different temporal resolutions, enabling the observation of GRN changes across varying time scales.
+- 🧬 **In Silico Perturbation**: CellProphet can reproduce the changes in cell fate following the knockout of key transcription factors.
+- 🧫 **Single-modality Excellence**: CellProphet achieves state-of-the-art performance using only scRNA-seq data, outperforming multi-modal methods while requiring less data and information.
+- 🔬 **Broad Applicability**: Unlike multi-modal approaches that require diverse and matched data, CellProphet's single-modality nature makes it highly adaptable and practical for real-world applications across different biological contexts.
+- 💻 **Computational Efficiency**: CellProphet demonstrates superior computational speed compared to existing methods, enabling faster analysis of large-scale datasets.
 
-![alt text](image.png)
+![alt text](image.pdf)
 
 ## Quick Links
 - [Installation](#installation)
@@ -36,8 +36,8 @@ TRIGON is a Transformer-based model that predicts the expression of target genes
 ## Installation
 1. Clone the repository to your local machine and enter the repository in the command line interface.
 ```
-git clone https://github.com/prsigma/TRIGON.git
-cd TRIGON
+git clone https://github.com/prsigma/CellProphet.git
+cd CellProphet
 ```
 
 2. Use conda to create a new environment according to environment.yaml
@@ -46,7 +46,7 @@ conda env create -f environment.yaml
 ```
 3. Install relevant requirements
 ```
-conda activate TRIGON
+conda activate CellProphet
 pip install -r requirements.txt
 pip install celloracle
 ```
@@ -54,7 +54,7 @@ pip install celloracle
 **IMPORTANT NOTE**: For servers with cuda lower than 11.7, consider upgrading cuda or install ```pytorch``` with cpu version.
 
 ## Input data
-TRIGON accepts the following data as input:
+CellProphet accepts the following data as input:
 - **scRNA-seq data**: a `.csv` file in which rows represent cells and columns represent genes, or a custom ```.h5ad``` file provided by the user.
 - **Pseudotime for each cell**: a `.csv` file represents the pseudotime calculated for each cell, or the pseudotime included in the user-provided ```.h5ad``` file. Users can define their own pseudotime calculation methods. For reference, we provide several commonly used pseudotime calculation methods:
     - [Slingshot](https://bioconductor.org/packages/release/bioc/html/slingshot.html)
@@ -130,9 +130,9 @@ TRIGON accepts the following data as input:
     ``
 
 ## Training & Inference
-We created a shell script `run.sh` to run the training process. The script integrates all the datasets we use (mESC, mHSC-GM, mHSC-L, mHSC-E), allowing us to obtain results for all datasets in one run. You can use the following code to run TRIGON:
+We created a shell script `run.sh` to run the training process. The script integrates all the datasets we use (mESC, mHSC-GM, mHSC-L, mHSC-E), allowing us to obtain results for all datasets in one run. You can use the following code to run CellProphet:
 ```
-conda activate TRIGON
+conda activate CellProphet
 bash run.sh
 ```
 
@@ -145,73 +145,73 @@ output/
 │   ├── end_tf.csv
 │   ├── expression.csv
 │   ├── gt_grn.csv  
-│   └── TRIGON
+│   └── CellProphet
 │       ├── checkpoint.pth   #trained model file
 │       ├── grn.csv         #inferred GRN for hESC
-│       ├── trigon_cell_sort.csv
-│       └── trigon_expression.csv
+│       ├── CellProphet_cell_sort.csv
+│       └── CellProphet_expression.csv
 ├── hHep
 │   ├── allNodes.csv
 │   ├── end_tf.csv
 │   ├── expression.csv
 │   ├── gt_grn.csv
-│   └── TRIGON
+│   └── CellProphet
 │       ├── checkpoint.pth   #trained model file
 │       ├── grn.csv         #inferred GRN for hHep
-│       ├── trigon_cell_sort.csv
-│       └── trigon_expression.csv
+│       ├── CellProphet_cell_sort.csv
+│       └── CellProphet_expression.csv
 ├── mDC
 │   ├── allNodes.csv
 │   ├── end_tf.csv
 │   ├── expression.csv
 │   ├── gt_grn.csv
-│   └── TRIGON
+│   └── CellProphet
 │       ├── checkpoint.pth   #trained model file
 │       ├── grn.csv         #inferred GRN for mDC
-│       ├── trigon_cell_sort.csv
-│       └── trigon_expression.csv
+│       ├── CellProphet_cell_sort.csv
+│       └── CellProphet_expression.csv
 ├── mESC
 │   ├── allNodes.csv
 │   ├── end_tf.csv
 │   ├── expression.csv
 │   ├── gt_grn.csv  
-│   └── TRIGON
+│   └── CellProphet
 │       ├── checkpoint.pth   #trained model file
 │       ├── grn.csv         #inferred GRN for mESC
-│       ├── trigon_cell_sort.csv
-│       └── trigon_expression.csv
+│       ├── CellProphet_cell_sort.csv
+│       └── CellProphet_expression.csv
 ├── mHSC-E
 │   ├── allNodes.csv
 │   ├── end_tf.csv
 │   ├── expression.csv
 │   ├── gt_grn.csv
-│   └── TRIGON
+│   └── CellProphet
 │       ├── checkpoint.pth   #trained model file
 │       ├── grn.csv         #inferred GRN for mHSC-E
-│       ├── trigon_cell_sort.csv
-│       └── trigon_expression.csv
+│       ├── CellProphet_cell_sort.csv
+│       └── CellProphet_expression.csv
 ├── mHSC-GM
 │   ├── allNodes.csv
 │   ├── end_tf.csv
 │   ├── expression.csv
 │   ├── gt_grn.csv
-│   └── TRIGON
+│   └── CellProphet
 │       ├── checkpoint.pth   #trained model file
 │       ├── grn.csv         #inferred GRN for mHSC-GM
-│       ├── trigon_cell_sort.csv
-│       └── trigon_expression.csv
+│       ├── CellProphet_cell_sort.csv
+│       └── CellProphet_expression.csv
 └── mHSC-L
     ├── allNodes.csv
     ├── end_tf.csv
     ├── expression.csv
     ├── gt_grn.csv
-    └── TRIGON
+    └── CellProphet
         ├── checkpoint.pth   #trained model file
         ├── grn.csv         #inferred GRN for mHSC-L
-        ├── trigon_cell_sort.csv
-        └── trigon_expression.csv
+        ├── CellProphet_cell_sort.csv
+        └── CellProphet_expression.csv
 ```
-In the `TRIGON` folder of each dataset, we provide the trained model file `checkpoint.pth` and the predicted GRN file `grn.csv`.
+In the `CellProphet` folder of each dataset, we provide the trained model file `checkpoint.pth` and the predicted GRN file `grn.csv`.
 
 ## Baseline Model reproduction
 We provide the code for reproducing the results of the baseline models in `baseline_models.py`. We compared a total of seven baseline models, including:
@@ -226,13 +226,13 @@ We provide the code for reproducing the results of the baseline models in `basel
 - Prior_Random: Used to evaluate the performance of randomly selecting edges from the prior network as the inferred GRN.
 1. You can simply use the following command to run the baseline models:
     ```
-    conda activate TRIGON
+    conda activate CellProphet
     bash run_baseline.sh
     ```
 2. When finished, you will find the corresponding `grn.csv` files in the corresponding algorithm name folder (except for CEFCON algorithm, the generated file is `cell_lineage_GRN.csv`):
 3. Run the following command to calculate the AUPRC and AUROC metrics for each method:
     ```
-    conda activate TRIGON
+    conda activate CellProphet
     python compute_baseline_metrcs.py
     ```
     When finished, you will find a `whole_metric.csv` file in the `output` folder, which saves the results of the AUPRC, and AUROC metrics for each method. You will also find the corresponding ROC curve (`roc_curve.png`) and PR curve (`pr_curve.png`) for each algorithm in their respective folders.
@@ -271,11 +271,11 @@ output/
 │   ├── Random
 │   │   └── grn.csv     #inferred GRN for Random of mESC
 │   ├── roc_curve.png   #ROC curve of all methods for mESC
-│   └── TRIGON
+│   └── CellProphet
 │       ├── checkpoint.pth  
-│       ├── grn.csv     #inferred GRN for TRIGON of mESC
-│       ├── trigon_cell_sort.csv
-│       └── trigon_expression.csv
+│       ├── grn.csv     #inferred GRN for CellProphet of mESC
+│       ├── CellProphet_cell_sort.csv
+│       └── CellProphet_expression.csv
 ├── mHSC-E
 │   ├── allNodes.csv
 │   ├── CEFCON
@@ -307,11 +307,11 @@ output/
 │   ├── Random
 │   │   └── grn.csv     #inferred GRN for Random of mHSC-E
 │   ├── roc_curve.png   #ROC curve of all methods for mHSC-E
-│   └── TRIGON
+│   └── CellProphet
 │       ├── checkpoint.pth
-│       ├── grn.csv     #inferred GRN for TRIGON of mHSC-E
-│       ├── trigon_cell_sort.csv
-│       └── trigon_expression.csv
+│       ├── grn.csv     #inferred GRN for CellProphet of mHSC-E
+│       ├── CellProphet_cell_sort.csv
+│       └── CellProphet_expression.csv
 ├── mHSC-GM
 │   ├── allNodes.csv
 │   ├── CEFCON
@@ -343,11 +343,11 @@ output/
 │   ├── Random
 │   │   └── grn.csv     #inferred GRN for Random of mHSC-GM
 │   ├── roc_curve.png   #ROC curve of all methods for mHSC-GM
-│   └── TRIGON
+│   └── CellProphet
 │       ├── checkpoint.pth
-│       ├── grn.csv     #inferred GRN for TRIGON of mHSC-GM
-│       ├── trigon_cell_sort.csv
-│       └── trigon_expression.csv
+│       ├── grn.csv     #inferred GRN for CellProphet of mHSC-GM
+│       ├── CellProphet_cell_sort.csv
+│       └── CellProphet_expression.csv
 ├── mHSC-L
 │   ├── allNodes.csv
 │   ├── CEFCON
@@ -379,11 +379,11 @@ output/
 │   ├── Random
 │   │   └── grn.csv     #inferred GRN for Random of mHSC-L
 │   ├── roc_curve.png   #ROC curve of all methods for mHSC-L    
-│   └── TRIGON
+│   └── CellProphet
 │       ├── checkpoint.pth
-│       ├── grn.csv     #inferred GRN for TRIGON of mHSC-L
-│       ├── trigon_cell_sort.csv
-│       └── trigon_expression.csv
+│       ├── grn.csv     #inferred GRN for CellProphet of mHSC-L
+│       ├── CellProphet_cell_sort.csv
+│       └── CellProphet_expression.csv
 ├── hHep
 │   ├── allNodes.csv
 │   ├── CEFCON
@@ -415,11 +415,11 @@ output/
 │   ├── Random
 │   │   └── grn.csv     #inferred GRN for Random of hHep
 │   ├── roc_curve.png   #ROC curve of all methods for hHep
-│   └── TRIGON
+│   └── CellProphet
 │       ├── checkpoint.pth
-│       ├── grn.csv     #inferred GRN for TRIGON of hHep
-│       ├── trigon_cell_sort.csv
-│       └── trigon_expression.csv
+│       ├── grn.csv     #inferred GRN for CellProphet of hHep
+│       ├── CellProphet_cell_sort.csv
+│       └── CellProphet_expression.csv
 ├── hESC
 │   ├── allNodes.csv
 │   ├── CEFCON
@@ -451,11 +451,11 @@ output/
 │   ├── Random
 │   │   └── grn.csv     #inferred GRN for Random of hESC
 │   ├── roc_curve.png   #ROC curve of all methods for hESC
-│   └── TRIGON
+│   └── CellProphet
 │       ├── checkpoint.pth
-│       ├── grn.csv     #inferred GRN for TRIGON of hESC
-│       ├── trigon_cell_sort.csv
-│       └── trigon_expression.csv
+│       ├── grn.csv     #inferred GRN for CellProphet of hESC
+│       ├── CellProphet_cell_sort.csv
+│       └── CellProphet_expression.csv
 └── mDC
     ├── allNodes.csv
     ├── CEFCON
@@ -487,11 +487,11 @@ output/
     ├── Random
     │   └── grn.csv     #inferred GRN for Random of mDC
     ├── roc_curve.png   #ROC curve of all methods for mDC
-    └── TRIGON
+    └── CellProphet
         ├── checkpoint.pth
-        ├── grn.csv     #inferred GRN for TRIGON of mDC
-        ├── trigon_cell_sort.csv
-        └── trigon_expression.csv
+        ├── grn.csv     #inferred GRN for CellProphet of mDC
+        ├── CellProphet_cell_sort.csv
+        └── CellProphet_expression.csv
 
 ```
 

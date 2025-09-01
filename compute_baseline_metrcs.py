@@ -263,7 +263,7 @@ datasets = ["mESC","mHSC-L","mHSC-E","mHSC-GM","hESC","hHep","mDC"]
 
 root_path = "output"
 
-algorithm = ['TRIGON','CEFCON','Celloracle','NetREX','GRNBoost2','GENIE3','Random',"Prior_Random","GRANGER","Inferelator"]
+algorithm = ['CellProphet','CEFCON','Celloracle','NetREX','GRNBoost2','GENIE3','Random',"Prior_Random","GRANGER","Inferelator"]
 
 
 metric_list = list()
@@ -281,7 +281,7 @@ for each_dataset in datasets:
         if each_algorithm == 'CEFCON':
             pred_grn_list.append(os.path.join(path,'cell_lineage_GRN.csv'))
             
-        elif each_algorithm == 'Celloracle' or each_algorithm == 'GRNBoost2' or each_algorithm == 'Random' or each_algorithm == 'GENIE3' or each_algorithm == 'TRIGON' or each_algorithm == 'Prior_Random' or each_algorithm == 'GRANGER' or each_algorithm == 'Inferelator':
+        elif each_algorithm == 'Celloracle' or each_algorithm == 'GRNBoost2' or each_algorithm == 'Random' or each_algorithm == 'GENIE3' or each_algorithm == 'CellProphet' or each_algorithm == 'Prior_Random' or each_algorithm == 'GRANGER' or each_algorithm == 'Inferelator':
             pred_grn_list.append(os.path.join(path,'grn.csv'))
         
         elif each_algorithm == 'NetREX':

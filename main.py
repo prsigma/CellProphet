@@ -16,7 +16,7 @@ import pytorch_warmup as warmup
 from utils import *
 import itertools
 from Data import Train_data, Test_data
-from model import TRIGON
+from model import CellProphet
 from baseline_models import baseline_compare
 
 seed_everything(2024)
@@ -100,7 +100,7 @@ def preprocess_data(args,logger):
 
     return True
 
-def preprocess_data_for_trigon(args):
+def preprocess_data_for_CellProphet(args):
     expression_path = os.path.join(args.output_dir,args.dataset_name,'expression.csv')
     gt_grn_path = os.path.join(args.output_dir,args.dataset_name,'gt_grn.csv')
 
@@ -206,14 +206,14 @@ def preprocess_data_for_trigon(args):
 
     size=[args.input_length,args.predict_length]
 
-    os.makedirs(os.path.join(args.output_dir,args.dataset_name,'TRIGON'),exist_ok=True)
-    expr_df.to_csv(os.path.join(args.output_dir,args.dataset_name,'TRIGON','trigon_expression.csv'))
-    cell_index_sorted_by_time.to_csv(os.path.join(args.output_dir,args.dataset_name,'TRIGON','trigon_cell_sort.csv'))
+    os.makedirs(os.path.join(args.output_dir,args.dataset_name,'CellProphet'),exist_ok=True)
+    expr_df.to_csv(os.path.join(args.output_dir,args.dataset_name,'CellProphet','CellProphet_expression.csv'))
+    cell_index_sorted_by_time.to_csv(os.path.join(args.output_dir,args.dataset_name,'CellProphet','CellProphet_cell_sort.csv'))
 
     return expression_data, dropout_mask, size, prior_mask, id_gene_df,no_regulate_genes_index,logFC_value,prior_grn
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='expriments for TRIGON')
+    parser = argparse.ArgumentParser(description='expriments for CellProphet')
 
     parser.add_argument('--data_source', type=str, required=True, choices=['BEELINE', 'others'], help='Specify the data source')
     parser.add_argument('--dataset_name',type=str,required=True, help='name of dataset')
@@ -322,7 +322,7 @@ def test(args,save_path,checkpoint_path,expression_data,id_gene_df,size,prior_ma
         shuffle=False,
         num_workers=args.num_workers)
     
-    model = TRIGON(args.input_length,
+    model = CellProphet(args.input_length,
                     args.predict_length,
                     args.d_model,
                     args.d_ff,
@@ -366,7 +366,7 @@ def test(args,save_path,checkpoint_path,expression_data,id_gene_df,size,prior_ma
         
         if args.index != -1:
             result = f'input_length:{args.input_length},predict_length:{args.predict_length},d_model:{args.d_model},heads:{args.heads},dropout:{args.dropout},layers:{args.encoder_layers},auc:{auc},aupr:{aupr}'
-            with open(os.path.join(args.output_dir,args.dataset_name,'TRIGON',f'results_{args.index}.txt'), 'a') as file:
+            with open(os.path.join(args.output_dir,args.dataset_name,'CellProphet',f'results_{args.index}.txt'), 'a') as file:
                 file.write(result + '\n')
         else:
             print(auc,aupr)
@@ -383,8 +383,8 @@ def main():
     if args.baseline:
         baseline_compare(args,logger)
     else:
-        # preprocess TRIGON data
-        expression_data, dropout_mask, size, prior_mask, id_gene_df,no_regulate_genes_index,logFC_value,prior_grn = preprocess_data_for_trigon(args) # expression_data (cell * gene)
+        # preprocess CellProphet data
+        expression_data, dropout_mask, size, prior_mask, id_gene_df,no_regulate_genes_index,logFC_value,prior_grn = preprocess_data_for_CellProphet(args) # expression_data (cell * gene)
         
         gene_to_id = dict(zip(id_gene_df['geneName'], id_gene_df['id']))
         prior_grn['Gene1_id'] = prior_grn['Gene1'].map(gene_to_id)
@@ -410,7 +410,7 @@ def main():
             shuffle=False,
             num_workers=args.num_workers)
 
-        model = TRIGON(args.input_length,
+        model = CellProphet(args.input_length,
                 args.predict_length,
                 args.d_model,
                 args.d_ff,
@@ -418,7 +418,7 @@ def main():
                 args.dropout,
                 args.encoder_layers).to(args.device)
         
-        save_path = os.path.join(args.output_dir,args.dataset_name,'TRIGON')
+        save_path = os.path.join(args.output_dir,args.dataset_name,'CellProphet')
         os.makedirs(save_path, exist_ok=True)
 
         model_optim = optim.Adam(model.parameters(), lr=args.learning_rate)

@@ -290,15 +290,15 @@ class Encoder(nn.Module):
 
         return x, spatial_attention
 
-class TRIGON(nn.Module):
+class CellProphet(nn.Module):
     """
-    TRIGON: A transformer-based model for gene regulatory network inference 
+    CellProphet: A transformer-based model for gene regulatory network inference 
     and gene expression prediction. Combines temporal and spatial attention 
     mechanisms to model gene expression dynamics.
     """
     def __init__(self, in_len, out_len, d_model, d_ff, n_heads, dropout, e_layers):
         """
-        Initialize the TRIGON model.
+        Initialize the CellProphet model.
         
         Args:
             in_len: Input sequence length (number of time points)
@@ -309,7 +309,7 @@ class TRIGON(nn.Module):
             dropout: Dropout rate
             e_layers: Number of encoder layers
         """
-        super(TRIGON, self).__init__()
+        super(CellProphet, self).__init__()
         self.in_len = in_len
         self.out_len = out_len
         self.d_model = d_model
@@ -337,7 +337,7 @@ class TRIGON(nn.Module):
     
     def forward(self, x, prior_mask,no_tf_genes_index):
         """
-        Forward pass of the TRIGON model.
+        Forward pass of the CellProphet model.
         
         Args:
             x: Input gene expression tensor [batch, time, gene]
