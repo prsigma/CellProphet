@@ -19,7 +19,7 @@ CellProphet is a Transformer-based model that predicts the expression of target 
 - 🔬 **Broad Applicability**: Unlike multi-modal approaches that require diverse and matched data, CellProphet's single-modality nature makes it highly adaptable and practical for real-world applications across different biological contexts.
 - 💻 **Computational Efficiency**: CellProphet demonstrates superior computational speed compared to existing methods, enabling faster analysis of large-scale datasets.
 
-![alt text](image.pdf)
+![alt text](image.png)
 
 ## Quick Links
 - [Installation](#installation)
