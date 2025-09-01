@@ -204,15 +204,6 @@ def RGM_activity(network, pred_grn, expression_data, topk, num_workers: int = 8)
     out_RGMs = dict()
 
     for i in genes:
-        # successors = network.successors(i)
-        # weighted_successors = [(succ, network[i][succ]['weights_combined']) for succ in successors]
-        
-        # weighted_successors.sort(key=lambda x: x[1], reverse=True)
-        
-        # topk_successors = [succ for succ, weight in weighted_successors[:topk]]
-        
-        # if topk_successors:
-        #     out_RGMs[i] = topk_successors
 
         out_RGMs = {i:list(set(network.successors(i))) for i in genes
                     if len(set(network.successors(i))) >0}
