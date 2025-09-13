@@ -514,5 +514,3 @@ In the article, we used the Gata1 knockout data from other studies to verify the
 
 ## Contact
 If you find any bugs or have any suggestions, please contact prchengdu@gmail.com or raise an issue in the github repo.
-
-```
