@@ -514,16 +514,4 @@ In the article, we used the Gata1 knockout data from other studies to verify the
 
 ## Contact
 If you find any bugs or have any suggestions, please contact prchengdu@gmail.com or raise an issue in the github repo.
-
-## Citation
-If you find this work useful, please consider citing:
-```bibtex
-@article{peng2025dissecting,
-  title={Dissecting dynamic gene regulatory network using transformer-based temporal causality analysis},
-  author={Peng, Rui and Qi, Juntian and Lu, Yuxing and Wu, Wei and Sun, Qichen and Zhang, Chi and Chen, Yihan and Wang, Jinzhuo},
-  journal={bioRxiv},
-  pages={2025--02},
-  year={2025},
-  publisher={Cold Spring Harbor Laboratory}
-}
 ```
